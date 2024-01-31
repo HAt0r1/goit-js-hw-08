@@ -74,7 +74,7 @@ function createElements({ preview, original, description }) {
     <img
       class="gallery-image"
       src="${preview}"
-      data-source="large-image.jpg"
+      data-source="${original}"
       alt="${description}"
     />
   </a>
@@ -90,31 +90,27 @@ for (const image of images) {
   gallery.insertAdjacentHTML("beforeend", markup);
 }
 
-// Create handler
+//
 
 gallery.addEventListener("click", (event) => {
   event.preventDefault();
-  const listItem = event.target.closest("li");
-  const originalImage = listItem.querySelector("a").getAttribute("href");
-  const description = listItem.querySelector("img").getAttribute("alt");
-
-  const lightBox = basicLightbox.create(`
-      <div class="modal">
-        <img
-          class="modal-img"
-          src="${originalImage}"
-          alt="${description}"
-        />
-      </div>
+  if (event.target.closest("img")) {
+    const original = event.target.dataset.source;
+    const description = event.target.getAttribute("alt");
+    const modalWindowElement = basicLightbox.create(`
+      <img
+      class="modal-img"
+      src="${original}"
+      data-source="${original}"
+      alt="${description}"
+    />
     `);
+    modalWindowElement.show();
 
-  lightBox.show();
-
-  // Create event which close modal window if user press escape button
-
-  document.addEventListener("keydown", (event) => {
-    if (event.code === "Escape") {
-      lightBox.close();
-    }
-  });
+    document.addEventListener("keydown", (event) => {
+      if (event.code === "Escape") {
+        modalWindowElement.close();
+      }
+    });
+  }
 });
