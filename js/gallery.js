@@ -65,11 +65,15 @@ const images = [
 ];
 
 const gallery = document.querySelector(".gallery");
+let modalWindow = null;
 
 // Create Markup for Elements
 
-function createElements({ preview, original, description }) {
-  const elementMarkup = `<li class="gallery-item">
+function createElement() {
+  const markupElements = images
+    .map(
+      ({ preview, original, description }) =>
+        `<li class="gallery-item">
   <a class="gallery-link" href="${original}">
     <img
       class="gallery-image"
@@ -78,39 +82,38 @@ function createElements({ preview, original, description }) {
       alt="${description}"
     />
   </a>
-</li>`;
-
-  return elementMarkup;
+  </li>`
+    )
+    .join("");
+  gallery.innerHTML = markupElements;
 }
 
-// Add elements into list
+// Use function to create elements in gallery
+createElement();
 
-for (const image of images) {
-  const markup = createElements(image);
-  gallery.insertAdjacentHTML("beforeend", markup);
-}
-
-//
-
-gallery.addEventListener("click", (event) => {
+function clickOnImage(event) {
   event.preventDefault();
   if (event.target.closest("img")) {
     const original = event.target.dataset.source;
     const description = event.target.getAttribute("alt");
-    const modalWindowElement = basicLightbox.create(`
-      <img
-      class="modal-img"
-      src="${original}"
-      data-source="${original}"
-      alt="${description}"
-    />
-    `);
-    modalWindowElement.show();
-
-    document.addEventListener("keydown", (event) => {
-      if (event.code === "Escape") {
-        modalWindowElement.close();
+    modalWindow = basicLightbox.create(
+      `<img class="modal-img" src="${original}" alt="${description}">`,
+      {
+        onShow: () => {
+          document.addEventListener("keydown", removeByEsc);
+        },
+        onClose: () => {
+          document.removeEventListener("keydown", removeByEsc);
+        },
       }
-    });
+    );
+    modalWindow.show();
   }
-});
+}
+
+function removeByEsc(event) {
+  if (event.code !== "Escape") return;
+  modalWindow.close();
+}
+
+gallery.addEventListener("click", clickOnImage);
